@@ -6,7 +6,9 @@ import streamlit as st
 import openai
 
 # Replace with your OpenAI free-tier key
-openai.api_key = "your-api-key"
+import os
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
 
 # UI Setup
 st.set_page_config(page_title="KPR AI Assistant", layout="centered")
