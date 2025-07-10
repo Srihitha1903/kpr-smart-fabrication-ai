@@ -3,7 +3,7 @@ import requests
 import os
 
 # ✅ Model known to work with free API
-HF_MODEL = "HF_MODEL = "tiiuae/falcon-rw-1b"
+HF_MODEL  = "tiiuae/falcon-rw-1b"
 API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
 
 # ✅ Load your Hugging Face token from secrets
