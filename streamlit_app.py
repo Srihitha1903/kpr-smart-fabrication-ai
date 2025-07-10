@@ -15,7 +15,7 @@ def query_huggingface(prompt):
         "Authorization": f"Bearer {HF_API_KEY}",
         "Content-Type": "application/json"
     }
-    payload = {
+    payload = { 
         "inputs": prompt,
         "parameters": {
             "max_new_tokens": 200,
