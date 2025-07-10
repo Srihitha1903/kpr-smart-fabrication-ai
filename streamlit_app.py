@@ -3,8 +3,9 @@ import requests
 import os
 
 # ✅ Model known to work with free API
-HF_MODEL  = "tiiuae/falcon-rw-1b"
+HF_MODEL = "mistralai/Mistral-7B-Instruct-v0.1"
 API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
+
 
 # ✅ Load your Hugging Face token from secrets
 HF_API_KEY = os.getenv("HF_API_KEY")
