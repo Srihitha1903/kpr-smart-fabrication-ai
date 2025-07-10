@@ -9,7 +9,7 @@ import requests  # Used to call Hugging Face model via REST API
 HF_API_KEY = st.secrets["HF_API_KEY"]
 
 # Select free Hugging Face model — Zephyr is a conversational, chat-optimized model
-HF_MODEL = "HuggingFaceH4/zephyr-7b-beta"
+HF_MODEL = "mistralai/Mistral-7B-Instruct-v0.1"
 API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
 
 # Define a function to call the Hugging Face API
