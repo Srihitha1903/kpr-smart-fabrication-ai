@@ -2,12 +2,14 @@ import streamlit as st
 import requests
 import os
 
-# Model info
+# ✅ Use a working public HF model that supports Inference API
 HF_MODEL = "google/flan-t5-base"
 API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
+
+# ✅ Load your Hugging Face API key from secrets
 HF_API_KEY = os.getenv("HF_API_KEY")
 
-# Function to query Hugging Face
+# ✅ Function to query Hugging Face API
 def query_huggingface(prompt):
     headers = {
         "Authorization": f"Bearer {HF_API_KEY}",
@@ -25,25 +27,24 @@ def query_huggingface(prompt):
 
     if response.status_code == 200:
         try:
-            result = response.json()
-            return result[0]["generated_text"].strip()
+            return response.json()[0]["generated_text"].strip()
         except:
-            return "⚠️ Could not parse response."
+            return "⚠️ Could not parse model response."
+    elif response.status_code == 401:
+        return "🔐 Invalid Hugging Face API key."
     elif response.status_code == 404:
         return "❌ Model not found or not available via API."
-    elif response.status_code == 401:
-        return "🔐 Invalid API key."
     elif response.status_code == 503:
-        return "⏳ Model is loading. Try again shortly."
+        return "⏳ Model is loading. Please try again in a few seconds."
     else:
         return f"❌ Error {response.status_code}: {response.text}"
 
-# Streamlit UI
+# ✅ Streamlit UI
 st.set_page_config(page_title="FabGenie – KPR AI Assistant")
 st.title("FabGenie – Your Smart Fabrication Assistant")
-st.markdown("Enter fabrication requirements using dropdowns or natural language.")
+st.markdown("FabGenie helps you figure out what to build using your material, machine, and industry.")
 
-input_mode = st.radio("Select Input Type", ["Simple Dropdown", "Natural Language"])
+input_mode = st.radio("Choose how you'd like to describe your need:", ["Simple Dropdown", "Natural Language"])
 
 if input_mode == "Simple Dropdown":
     industry = st.selectbox("Client Industry", ["Pharma", "Retail", "Automotive", "Defense", "Railways", "General"])
@@ -51,16 +52,16 @@ if input_mode == "Simple Dropdown":
     work_type = st.selectbox("Work Type", ["Laser Cutting", "Cutting", "Bending", "Welding", "Powder Coating"])
 
     prompt = f"""
-You are a smart assistant for a metal fabrication company.
-The client is in the {industry} industry, using {material} for {work_type}.
-Suggest 5 sheet metal products for this domain.
+Suggest 5 metal fabrication products using {material} and {work_type} for a client in the {industry} industry.
+Only suggest things relevant to that industry. Keep it simple and practical.
 """
+
 else:
-    user_query = st.text_area("Describe your requirement (e.g., racks for a pharma lab)")
+    user_query = st.text_area("Describe your requirement (e.g., 'We need mild steel lab racks for pharma')")
     prompt = f"""
-You are a helpful AI assistant for a fabrication company.
 A client says: "{user_query}"
-Suggest 4–6 suitable products that can be fabricated using laser cutting.
+Suggest 5 relevant sheet metal products they could fabricate using laser cutting or bending.
+Be clear and helpful.
 """
 
 if st.button("Suggest Products"):
