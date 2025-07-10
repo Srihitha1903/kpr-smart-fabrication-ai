@@ -11,7 +11,6 @@ HF_API_KEY = os.getenv("HF_API_KEY")
 # Select free Hugging Face model — Zephyr is chat-optimized and available via free Inference API
 HF_MODEL = "HuggingFaceH4/zephyr-7b-beta"
 API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
-
 # Function to call the Hugging Face API
 def query_huggingface(prompt):
     headers = {
