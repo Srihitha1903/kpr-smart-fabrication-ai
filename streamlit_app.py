@@ -3,7 +3,7 @@ import requests
 import os
 
 # Model info
-HF_MODEL = "google/flan-t5-large"
+HF_MODEL = "google/flan-t5-base"
 API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
 HF_API_KEY = os.getenv("HF_API_KEY")
 
