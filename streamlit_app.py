@@ -1,17 +1,13 @@
-# FabGenie – KPR Smart Fabrication AI using Hugging Face (Free, No Billing)
-# Author: Srihitha | GenAI Engineer (MSME Project)
-
 import streamlit as st
 import requests
 import os
 
-# Load Hugging Face API key securely from Streamlit secrets
-HF_API_KEY = os.getenv("HF_API_KEY")
-
-# Select free Hugging Face model — Zephyr is chat-optimized and available via free Inference API
+# Model info
 HF_MODEL = "bigscience/bloomz-560m"
 API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
-# Function to call the Hugging Face API
+HF_API_KEY = os.getenv("HF_API_KEY")
+
+# Function to query Hugging Face
 def query_huggingface(prompt):
     headers = {
         "Authorization": f"Bearer {HF_API_KEY}",
@@ -19,7 +15,10 @@ def query_huggingface(prompt):
     }
     payload = {
         "inputs": prompt,
-        "parameters": {"max_new_tokens": 300, "temperature": 0.7}
+        "parameters": {
+            "max_new_tokens": 300,
+            "temperature": 0.7
+        }
     }
 
     response = requests.post(API_URL, headers=headers, json=payload)
@@ -27,62 +26,44 @@ def query_huggingface(prompt):
     if response.status_code == 200:
         try:
             result = response.json()
-            if isinstance(result, list) and "generated_text" in result[0]:
-                return result[0]["generated_text"].strip()
-            elif isinstance(result, dict) and "generated_text" in result:
-                return result["generated_text"].strip()
-            else:
-                return "⚠️ No valid response from model."
-        except Exception as e:
-            return f"⚠️ Failed to parse output: {str(e)}"
+            return result[0]["generated_text"].strip()
+        except:
+            return "⚠️ Could not parse response."
+    elif response.status_code == 404:
+        return "❌ Model not found or not available via API."
     elif response.status_code == 401:
-        return "🔐 Invalid Hugging Face API key."
+        return "🔐 Invalid API key."
     elif response.status_code == 503:
-        return "⏳ Model is loading. Try again in a few seconds."
+        return "⏳ Model is loading. Try again shortly."
     else:
-        return f"❌ API Error {response.status_code}: {response.text}"
+        return f"❌ Error {response.status_code}: {response.text}"
 
-# Streamlit app UI setup
-st.set_page_config(page_title="FabGenie – KPR AI Assistant", layout="centered")
+# Streamlit UI
+st.set_page_config(page_title="FabGenie – KPR AI Assistant")
 st.title("FabGenie – Your Smart Fabrication Assistant")
-st.markdown("""
-FabGenie helps you figure out what to build using your material, machines, and client industry.
+st.markdown("Enter fabrication requirements using dropdowns or natural language.")
 
-You can either fill in dropdowns or speak in simple natural language.
-""")
+input_mode = st.radio("Select Input Type", ["Simple Dropdown", "Natural Language"])
 
-# Choose input mode
-input_mode = st.radio("Choose how you'd like to describe your need:", ["Simple Dropdown", "Natural Language"])
-
-# ---- MODE 1: STRUCTURED DROPDOWNS (FOR VENDORS) ----
 if input_mode == "Simple Dropdown":
     industry = st.selectbox("Client Industry", ["Pharma", "Retail", "Automotive", "Defense", "Railways", "General"])
     material = st.selectbox("Material Type", ["Mild Steel", "Stainless Steel", "Aluminium", "Copper"])
     work_type = st.selectbox("Work Type", ["Laser Cutting", "Cutting", "Bending", "Welding", "Powder Coating"])
 
-    # Prompt for Hugging Face model
     prompt = f"""
-You are a smart assistant for a sheet metal fabrication company. 
-The client is from the {industry} industry and wants to use {material} for {work_type}. 
-Suggest 6 fabrication products relevant only to the {industry} domain. 
-Format them as a numbered list with short descriptions.
+You are a smart assistant for a metal fabrication company.
+The client is in the {industry} industry, using {material} for {work_type}.
+Suggest 5 sheet metal products for this domain.
 """
-
-# ---- MODE 2: NATURAL LANGUAGE (FOR INTERNAL STAFF) ----
 else:
-    user_query = st.text_area("Describe what you need (e.g., 'We need racks for a pharma lab')", max_chars=300)
+    user_query = st.text_area("Describe your requirement (e.g., racks for a pharma lab)")
     prompt = f"""
-You are a helpful AI assistant for a metal fabrication company.
+You are a helpful AI assistant for a fabrication company.
 A client says: "{user_query}"
-Interpret the request and suggest 4–6 relevant sheet metal products they could fabricate using laser cutting and bending.
-Explain clearly, using simple language without industry jargon.
+Suggest 4–6 suitable products that can be fabricated using laser cutting.
 """
 
-# ---- GPT TRIGGER ----
 if st.button("Suggest Products"):
     st.subheader("Recommended Fabrication Ideas:")
-    try:
-        result = query_huggingface(prompt)
-        st.markdown(result)
-    except Exception as e:
-        st.error("Something went wrong. Check API key or model availability.")
+    response = query_huggingface(prompt)
+    st.markdown(response)
